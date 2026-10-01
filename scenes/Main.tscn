@@ -120,31 +120,39 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "개인 저널"
 
-[node name="JournalColumns" type="HBoxContainer" parent="Margin/Layout/Body/JournalPanel"]
+[node name="JournalListScroll" type="ScrollContainer" parent="Margin/Layout/Body/JournalPanel"]
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="JournalColumns" type="HBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalListScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="MaterialColumn" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalColumns"]
+[node name="MaterialColumn" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalListScroll/JournalColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="Margin/Layout/Body/JournalPanel/JournalColumns/MaterialColumn"]
+[node name="Title" type="Label" parent="Margin/Layout/Body/JournalPanel/JournalListScroll/JournalColumns/MaterialColumn"]
 layout_mode = 2
 text = "자료"
 
-[node name="MaterialList" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalColumns/MaterialColumn"]
-layout_mode = 2
-
-[node name="WitnessColumn" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalColumns"]
+[node name="MaterialList" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalListScroll/JournalColumns/MaterialColumn"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="Margin/Layout/Body/JournalPanel/JournalColumns/WitnessColumn"]
+[node name="WitnessColumn" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalListScroll/JournalColumns"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="Margin/Layout/Body/JournalPanel/JournalListScroll/JournalColumns/WitnessColumn"]
 layout_mode = 2
 text = "목격"
 
-[node name="WitnessList" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalColumns/WitnessColumn"]
+[node name="WitnessList" type="VBoxContainer" parent="Margin/Layout/Body/JournalPanel/JournalListScroll/JournalColumns/WitnessColumn"]
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="Divider" type="HSeparator" parent="Margin/Layout/Body/JournalPanel"]
 layout_mode = 2
@@ -160,9 +168,9 @@ theme_override_colors/font_color = Color(0.58, 0.65, 0.66, 1)
 text = ""
 autowrap_mode = 2
 
-[node name="EntryBody" type="Label" parent="Margin/Layout/Body/JournalPanel"]
+[node name="EntryBody" type="RichTextLabel" parent="Margin/Layout/Body/JournalPanel"]
 layout_mode = 2
 size_flags_vertical = 3
 text = "발견한 자료와 직접 목격한 현상을 여기서 다시 확인할 수 있습니다."
 autowrap_mode = 2
-vertical_alignment = 1
+scroll_active = true

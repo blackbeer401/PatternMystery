@@ -3,6 +3,7 @@ extends RefCounted
 
 const PLAYER_NAME := "Player 1"
 const START_LOCATION := "central_hall"
+const JOURNAL_KINDS := ["material", "witness"]
 
 const ENTRIES := {
 	"entrance_notice": {
@@ -88,11 +89,11 @@ func get_location_title(target_id: String) -> String:
 	return LOCATIONS.get(target_id, {}).get("title", target_id)
 
 
-func move_to(target_id: String) -> bool:
-	if target_id not in get_location()["exits"]:
-		return false
+func move_to(target_id: String) -> Dictionary:
+	if not LOCATIONS.has(target_id) or target_id not in get_location().get("exits", []):
+		return _action_result(false, "그 장소로 바로 이동할 수 없다.")
 	location_id = target_id
-	return true
+	return _action_result(true, "%s에 도착했다." % get_location_title(target_id))
 
 
 func inspect(object_id: String) -> Dictionary:
@@ -103,20 +104,19 @@ func inspect(object_id: String) -> Dictionary:
 			break
 
 	if object_definition.is_empty():
-		return {"ok": false, "feedback": "현재 장소에서는 조사할 수 없다."}
+		return _action_result(false, "현재 장소에서는 조사할 수 없다.")
 
-	var result := {
-		"ok": true,
-		"feedback": object_definition["feedback"],
-		"new_entry": false,
-		"entry": {}
-	}
+	var result := _action_result(true, object_definition.get("feedback", ""))
 	if not object_definition.has("entry_id"):
 		return result
 
 	var entry_id: String = object_definition["entry_id"]
+	if not ENTRIES.has(entry_id):
+		return _action_result(false, "조사 데이터가 올바르지 않다.")
 	var definition: Dictionary = ENTRIES[entry_id]
-	var kind: String = definition["kind"]
+	var kind: String = definition.get("kind", "")
+	if not journal.has(kind):
+		return _action_result(false, "조사 데이터가 올바르지 않다.")
 	if not journal[kind].has(entry_id):
 		discovery_order += 1
 		journal[kind][entry_id] = {
@@ -140,10 +140,59 @@ func get_journal_entries(kind: String) -> Array[Dictionary]:
 
 
 func get_journal_entry(kind: String, entry_id: String) -> Dictionary:
-	if not journal.has(kind) or not journal[kind].has(entry_id):
+	if not journal.has(kind) or not journal[kind].has(entry_id) or not ENTRIES.has(entry_id):
 		return {}
 	var entry: Dictionary = ENTRIES[entry_id].duplicate(true)
 	entry["entry_id"] = entry_id
 	entry.merge(journal[kind][entry_id], true)
 	entry["location_title"] = get_location_title(entry["location_id"])
 	return entry
+
+
+func validate_content() -> Array[String]:
+	var errors: Array[String] = []
+	if not LOCATIONS.has(START_LOCATION):
+		errors.append("시작 장소가 존재하지 않음: %s" % START_LOCATION)
+
+	for entry_id: String in ENTRIES:
+		if entry_id.is_empty():
+			errors.append("빈 journal entry ID")
+			continue
+		var kind: String = ENTRIES[entry_id].get("kind", "")
+		if kind not in JOURNAL_KINDS:
+			errors.append("지원하지 않는 journal kind: %s (%s)" % [kind, entry_id])
+
+	for source_id: String in LOCATIONS:
+		var location: Dictionary = LOCATIONS[source_id]
+		var seen_exits := {}
+		for target_id: String in location.get("exits", []):
+			if not LOCATIONS.has(target_id):
+				errors.append("존재하지 않는 exit: %s -> %s" % [source_id, target_id])
+			if seen_exits.has(target_id):
+				errors.append("중복 exit: %s -> %s" % [source_id, target_id])
+			seen_exits[target_id] = true
+
+		var seen_objects := {}
+		for object_definition: Dictionary in location.get("objects", []):
+			var object_id: String = object_definition.get("id", "")
+			if object_id.is_empty():
+				errors.append("빈 조사 오브젝트 ID: %s" % source_id)
+			elif seen_objects.has(object_id):
+				errors.append("중복 조사 오브젝트 ID: %s/%s" % [source_id, object_id])
+			seen_objects[object_id] = true
+
+			if object_definition.has("entry_id"):
+				var entry_id: String = object_definition["entry_id"]
+				if not ENTRIES.has(entry_id):
+					errors.append("존재하지 않는 entry_id: %s/%s -> %s" % [source_id, object_id, entry_id])
+
+	return errors
+
+
+func _action_result(ok: bool, feedback: String, new_entry: bool = false, entry: Dictionary = {}) -> Dictionary:
+	return {
+		"ok": ok,
+		"feedback": feedback,
+		"new_entry": new_entry,
+		"entry": entry
+	}

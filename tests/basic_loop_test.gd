@@ -10,6 +10,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var state := PrototypeGameState.new()
 	assert(state.validate_content().is_empty())
+	_test_invalid_content_validation(state)
 	assert(state.location_id == "central_hall")
 
 	var invalid_move := state.move_to("missing_location")
@@ -70,8 +71,10 @@ func _run() -> void:
 
 	_press_button(main.object_list, "object_id", "notice_board")
 	await process_frame
-	assert(main.material_list.get_child_count() == 1)
+	_press_button(main.material_list, "entry_id", "entrance_notice")
+	await process_frame
 	assert(main.entry_title.text == main.state.get_journal_entries("material")[0]["title"])
+	assert(main.entry_body.text == main.state.get_journal_entries("material")[0]["body"])
 
 	_press_button(main.exit_list, "target_id", "broadcast_room")
 	await process_frame
@@ -90,6 +93,42 @@ func _run() -> void:
 func _assert_action_result(result: Dictionary) -> void:
 	for key: String in ["ok", "feedback", "new_entry", "entry"]:
 		assert(result.has(key))
+
+
+func _test_invalid_content_validation(state: PrototypeGameState) -> void:
+	const INVALID_LOCATION := "__validation_invalid_location"
+	const INVALID_OBJECT_LOCATION := "__validation_invalid_object_location"
+	const INVALID_ENTRY := "__validation_invalid_entry"
+	var locations := {
+		INVALID_LOCATION: {
+			"description": "테스트",
+			"color": "not-a-color",
+			"objects": "not-an-array",
+			"exits": 7
+		},
+		INVALID_OBJECT_LOCATION: {
+			"title": "테스트",
+			"description": "테스트",
+			"color": "#000000",
+			"objects": [7],
+			"exits": []
+		}
+	}
+	var entries := {INVALID_ENTRY: 7}
+	var errors := state._validate_content_data(locations, entries, INVALID_LOCATION)
+
+	assert(_has_error(errors, "장소 title이 String이 아님"))
+	assert(_has_error(errors, "장소 objects가 Array가 아님"))
+	assert(_has_error(errors, "장소 exits가 Array가 아님"))
+	assert(_has_error(errors, "조사 오브젝트가 Dictionary가 아님"))
+	assert(_has_error(errors, "journal entry가 Dictionary가 아님"))
+
+
+func _has_error(errors: Array[String], expected: String) -> bool:
+	for error: String in errors:
+		if expected in error:
+			return true
+	return false
 
 
 func _press_button(container: Node, meta_key: String, value: String) -> void:

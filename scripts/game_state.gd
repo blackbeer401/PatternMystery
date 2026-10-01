@@ -150,40 +150,103 @@ func get_journal_entry(kind: String, entry_id: String) -> Dictionary:
 
 
 func validate_content() -> Array[String]:
-	var errors: Array[String] = []
-	if not LOCATIONS.has(START_LOCATION):
-		errors.append("시작 장소가 존재하지 않음: %s" % START_LOCATION)
+	return _validate_content_data(LOCATIONS, ENTRIES, START_LOCATION)
 
-	for entry_id: String in ENTRIES:
+
+func _validate_content_data(locations: Dictionary, entries: Dictionary, start_location: String) -> Array[String]:
+	var errors: Array[String] = []
+	if not locations.has(start_location):
+		errors.append("시작 장소가 존재하지 않음: %s" % start_location)
+
+	for raw_entry_id: Variant in entries:
+		if typeof(raw_entry_id) != TYPE_STRING:
+			errors.append("journal entry ID가 String이 아님")
+			continue
+		var entry_id: String = raw_entry_id
 		if entry_id.is_empty():
 			errors.append("빈 journal entry ID")
 			continue
-		var kind: String = ENTRIES[entry_id].get("kind", "")
+		var entry_value: Variant = entries[entry_id]
+		if typeof(entry_value) != TYPE_DICTIONARY:
+			errors.append("journal entry가 Dictionary가 아님: %s" % entry_id)
+			continue
+		var entry: Dictionary = entry_value
+		if typeof(entry.get("title")) != TYPE_STRING:
+			errors.append("journal title이 String이 아님: %s" % entry_id)
+		if typeof(entry.get("body")) != TYPE_STRING:
+			errors.append("journal body가 String이 아님: %s" % entry_id)
+		if typeof(entry.get("kind")) != TYPE_STRING:
+			errors.append("journal kind가 String이 아님: %s" % entry_id)
+			continue
+		var kind: String = entry["kind"]
 		if kind not in JOURNAL_KINDS:
 			errors.append("지원하지 않는 journal kind: %s (%s)" % [kind, entry_id])
 
-	for source_id: String in LOCATIONS:
-		var location: Dictionary = LOCATIONS[source_id]
-		var seen_exits := {}
-		for target_id: String in location.get("exits", []):
-			if not LOCATIONS.has(target_id):
-				errors.append("존재하지 않는 exit: %s -> %s" % [source_id, target_id])
-			if seen_exits.has(target_id):
-				errors.append("중복 exit: %s -> %s" % [source_id, target_id])
-			seen_exits[target_id] = true
+	for raw_source_id: Variant in locations:
+		if typeof(raw_source_id) != TYPE_STRING:
+			errors.append("장소 ID가 String이 아님")
+			continue
+		var source_id: String = raw_source_id
+		var location_value: Variant = locations[source_id]
+		if typeof(location_value) != TYPE_DICTIONARY:
+			errors.append("장소가 Dictionary가 아님: %s" % source_id)
+			continue
+		var location: Dictionary = location_value
+		if typeof(location.get("title")) != TYPE_STRING:
+			errors.append("장소 title이 String이 아님: %s" % source_id)
+		if typeof(location.get("description")) != TYPE_STRING:
+			errors.append("장소 description이 String이 아님: %s" % source_id)
+		var color_value: Variant = location.get("color")
+		if typeof(color_value) != TYPE_STRING or not Color.html_is_valid(color_value):
+			errors.append("장소 color가 유효한 HTML 색상이 아님: %s" % source_id)
+
+		var exits_value: Variant = location.get("exits")
+		if typeof(exits_value) != TYPE_ARRAY:
+			errors.append("장소 exits가 Array가 아님: %s" % source_id)
+		else:
+			var seen_exits := {}
+			for target_value: Variant in exits_value:
+				if typeof(target_value) != TYPE_STRING:
+					errors.append("exit 목적지가 String이 아님: %s" % source_id)
+					continue
+				var target_id: String = target_value
+				if not locations.has(target_id):
+					errors.append("존재하지 않는 exit: %s -> %s" % [source_id, target_id])
+				if seen_exits.has(target_id):
+					errors.append("중복 exit: %s -> %s" % [source_id, target_id])
+				seen_exits[target_id] = true
+
+		var objects_value: Variant = location.get("objects")
+		if typeof(objects_value) != TYPE_ARRAY:
+			errors.append("장소 objects가 Array가 아님: %s" % source_id)
+			continue
 
 		var seen_objects := {}
-		for object_definition: Dictionary in location.get("objects", []):
-			var object_id: String = object_definition.get("id", "")
+		for object_value: Variant in objects_value:
+			if typeof(object_value) != TYPE_DICTIONARY:
+				errors.append("조사 오브젝트가 Dictionary가 아님: %s" % source_id)
+				continue
+			var object_definition: Dictionary = object_value
+			if typeof(object_definition.get("id")) != TYPE_STRING:
+				errors.append("조사 오브젝트 ID가 String이 아님: %s" % source_id)
+				continue
+			var object_id: String = object_definition["id"]
 			if object_id.is_empty():
 				errors.append("빈 조사 오브젝트 ID: %s" % source_id)
 			elif seen_objects.has(object_id):
 				errors.append("중복 조사 오브젝트 ID: %s/%s" % [source_id, object_id])
 			seen_objects[object_id] = true
+			if typeof(object_definition.get("label")) != TYPE_STRING:
+				errors.append("조사 오브젝트 label이 String이 아님: %s/%s" % [source_id, object_id])
+			if object_definition.has("feedback") and typeof(object_definition["feedback"]) != TYPE_STRING:
+				errors.append("조사 오브젝트 feedback이 String이 아님: %s/%s" % [source_id, object_id])
 
 			if object_definition.has("entry_id"):
+				if typeof(object_definition["entry_id"]) != TYPE_STRING:
+					errors.append("entry_id가 String이 아님: %s/%s" % [source_id, object_id])
+					continue
 				var entry_id: String = object_definition["entry_id"]
-				if not ENTRIES.has(entry_id):
+				if not entries.has(entry_id):
 					errors.append("존재하지 않는 entry_id: %s/%s -> %s" % [source_id, object_id, entry_id])
 
 	return errors

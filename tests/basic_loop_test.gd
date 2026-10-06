@@ -186,33 +186,77 @@ func _test_ui() -> bool:
 	_click_spot(main, "central_hall")
 	_click_spot(main, "annex_direction")
 	assert(main.state.location_id == "annex_wall")
+	assert(_assert_invisible_hotspots(main))
+	assert(_assert_annex_background(main, "annex_before.png"))
+	# Image-space points on the four real objects must hit their matching regions.
+	var object_points := {"hall_return": Vector2(0.13, 0.48), "work_board": Vector2(0.32, 0.35), "wall_zoom": Vector2(0.56, 0.42), "materials": Vector2(0.89, 0.76)}
+	for id: String in object_points:
+		var point: Vector2 = main.annex_canvas.global_position + main.annex_canvas.size * object_points[id]
+		assert(_find_button(main.place_view, "spot", id).get_global_rect().has_point(point))
 	assert(main.state.get_journal_entries("material").size() == 4)
 	assert(main.state.get_journal_entries("witness").is_empty())
-	_click_spot(main, "work_board")
+	await _click_real_spot(main, "work_board")
 	assert(main.dialogue_text.text.contains("B-2"))
 	main.next_line.pressed.emit()
-	_click_spot(main, "materials")
+	await _click_real_spot(main, "materials")
 	main.next_line.pressed.emit()
 	assert(main.state.discovery_order == 4)
 
-	_click_spot(main, "wall_zoom")
+	# Leaving before the wall inspection must not reveal the space.
+	await _click_real_spot(main, "hall_return")
+	_click_spot(main, "annex_direction")
+	assert(main.wall_stage == 0)
+	assert(_assert_annex_background(main, "annex_before.png"))
+	await _click_real_spot(main, "wall_zoom")
 	assert(main.zoomed)
+	assert(main.wall_stage == 0)
+	assert(main.dialogue_overlay.visible)
+	assert(main.dialogue_text.text == "…뒤에 뭐가 있는데.")
+	assert(_assert_annex_background(main, "annex_before.png"))
+	assert(_assert_invisible_hotspots(main))
+	main._on_spot("iron_access")
+	main._on_spot("space_view")
 	assert(main.wall_stage == 0)
 	assert(main.state.get_journal_entries("witness").is_empty())
 	assert(not _has_spot(main, "space_view"))
 	assert(not _has_spot(main, "iron_access"))
-	_click_spot(main, "zoom_back")
-	assert(not main.zoomed)
-	_click_spot(main, "wall_zoom")
-	_click_spot(main, "dark_space")
-	assert(main.wall_stage == 1)
-	assert(main.dialogue_text.text == "…뒤에 뭐가 있는데.")
-	assert(main.state.get_journal_entries("witness").is_empty())
-	_click_spot(main, "iron_access")
-	assert(main.wall_stage == 1) # Dialogue blocks even emitted signals.
 	main.next_line.pressed.emit()
-	_click_spot(main, "iron_access")
+	assert(main.wall_stage == 1)
+	assert(not main.dialogue_overlay.visible)
+	assert(_assert_annex_background(main, "annex_revealed.png"))
+	assert(_assert_invisible_hotspots(main))
+	assert(_has_spot(main, "dark_space"))
+	assert(_has_spot(main, "iron_access"))
+	assert(not _has_spot(main, "frame_detail"))
+	assert(not _has_spot(main, "space_view"))
+	assert(main.state.get_journal_entries("witness").is_empty())
+	# The future worn-mark location is still inactive, even on the revealed image.
+	await _mouse_click(main.annex_canvas.global_position + main.annex_canvas.size * Vector2(0.58, 0.51))
+	assert(main.wall_stage == 1)
+	assert(not main.dialogue_overlay.visible)
+	assert(main.state.get_journal_entries("witness").is_empty())
+	await _click_real_spot(main, "zoom_back")
+	assert(not main.zoomed)
+	assert(_assert_annex_background(main, "annex_revealed.png"))
+	await _click_real_spot(main, "hall_return")
+	_click_spot(main, "annex_direction")
+	assert(main.wall_stage == 1)
+	assert(_assert_annex_background(main, "annex_revealed.png"))
+	assert(main.state.get_journal_entries("witness").is_empty())
+	# Environmental hotspots remain functional on the revealed background.
+	for id: String in ["work_board", "materials"]:
+		await _click_real_spot(main, id)
+		main.next_line.pressed.emit()
+		assert(main.wall_stage == 1)
+		assert(_assert_annex_background(main, "annex_revealed.png"))
+	await _click_real_spot(main, "wall_zoom")
+	assert(not main.dialogue_overlay.visible) # No repeat of the discovery line.
+	assert(_assert_annex_background(main, "annex_revealed.png"))
+	await _click_real_spot(main, "iron_access")
 	assert(main.wall_stage == 2)
+	assert(_assert_invisible_hotspots(main))
+	assert(_has_spot(main, "space_view"))
+	assert(not _has_spot(main, "iron_access"))
 	assert(main.dialogue_text.text == "…문?")
 	assert(main.state.get_journal_entries("witness").size() == 1)
 	assert(main.state.get_journal_entry("witness", "remaining_space").is_empty())
@@ -225,12 +269,12 @@ func _test_ui() -> bool:
 		assert(main.speaker.text == "주인공")
 		main.next_line.pressed.emit()
 	assert(main.state.discovery_order == 5)
-	_click_spot(main, "space_view")
+	await _click_real_spot(main, "space_view")
 	assert(main.dialogue_text.text == "생각보다 깊은데.")
 	main.next_line.pressed.emit()
 	assert(main.state.discovery_order == 6)
 	var space: Dictionary = main.state.get_journal_entry("witness", "remaining_space")
-	_click_spot(main, "space_view")
+	await _click_real_spot(main, "space_view")
 	main.next_line.pressed.emit()
 	assert(main.state.discovery_order == 6)
 	assert(main.state.get_journal_entry("witness", "remaining_space") == space)
@@ -244,7 +288,7 @@ func _test_ui() -> bool:
 	assert(main.entry_body.text == original["body"])
 	assert(main.entry_meta.text.contains("교무실"))
 	assert(main.entry_meta.text.contains("발견 순서: 1"))
-	_click_spot(main, "zoom_back")
+	await _click_real_spot(main, "zoom_back")
 	assert(main.zoomed) # Journal is modal.
 	_press_button(main.journal_overlay, "ui", "close_journal")
 	assert(not main.journal_overlay.visible)
@@ -259,10 +303,11 @@ func _test_ui() -> bool:
 	main.next_line.pressed.emit()
 	assert(main.state.discovery_order == 6)
 	_click_spot(main, "annex_wall")
-	_click_spot(main, "wall_zoom")
+	await _click_real_spot(main, "wall_zoom")
 	assert(main.wall_stage == 2) # Observed geometry survives returning.
+	assert(_assert_annex_background(main, "annex_revealed.png"))
 	_click_spot(main, "zoom_back")
-	_click_spot(main, "hall_return")
+	await _click_real_spot(main, "hall_return")
 	assert(main.state.location_id == "central_hall")
 	assert(not main.dialogue_overlay.visible)
 	main.journal_button.pressed.emit()
@@ -281,6 +326,39 @@ func _test_ui() -> bool:
 	assert(fresh.state.location_id == "annex_wall")
 	assert(fresh.state.discovery_order == 0)
 	assert(fresh.wall_stage == 0)
+	assert(_assert_annex_background(fresh, "annex_before.png"))
+	assert(_assert_invisible_hotspots(fresh))
+	# Texture replacement and resizing share a single canvas with the hotspots.
+	var image := Image.create_empty(640, 360, false, Image.FORMAT_RGBA8)
+	image.fill(Color("#444444"))
+	fresh.annex_before_background = ImageTexture.create_from_image(image)
+	fresh._render_location()
+	assert(fresh.annex_canvas.get_node("BackgroundTexture").texture == fresh.annex_before_background)
+	assert(not fresh.annex_canvas.has_node("TemporaryGeometry"))
+	var board := _find_button(fresh.place_view, "spot", "work_board")
+	var normalized := Rect2(board.anchor_left, board.anchor_top, board.anchor_right - board.anchor_left, board.anchor_bottom - board.anchor_top)
+	for view_size: Vector2 in [Vector2(960, 540), Vector2(800, 720), Vector2(1600, 900)]:
+		fresh.size = view_size
+		await process_frame
+		var canvas: Control = fresh.annex_canvas
+		assert(is_equal_approx(canvas.size.x / canvas.size.y, 16.0 / 9.0))
+		assert(canvas.size.x <= fresh.place_view.size.x + 1)
+		assert(canvas.size.y <= fresh.place_view.size.y + 1)
+		assert(is_equal_approx(board.size.x / canvas.size.x, normalized.size.x))
+		assert(is_equal_approx(board.position.x / canvas.size.x, normalized.position.x))
+	fresh.set_debug_hotspots(true)
+	assert(_find_button(fresh.place_view, "spot", "work_board").get_theme_stylebox("normal") is StyleBoxFlat)
+	fresh.set_debug_hotspots(false)
+	assert(_assert_invisible_hotspots(fresh))
+	fresh.size = Vector2(1280, 720)
+	await process_frame
+	await _click_real_spot(fresh, "wall_zoom")
+	fresh.next_line.pressed.emit()
+	assert(_assert_annex_background(fresh, "annex_revealed.png"))
+	await _click_real_spot(fresh, "dark_space")
+	assert(fresh.wall_stage == 2)
+	assert(fresh.state.get_journal_entries("witness").size() == 1)
+	fresh.next_line.pressed.emit()
 	fresh.queue_free()
 	await process_frame
 	return true
@@ -304,10 +382,7 @@ func _click_spot(main: Control, id: String) -> void:
 
 
 func _has_spot(main: Control, id: String) -> bool:
-	for child in main.place_view.get_children():
-		if child is Button and child.get_meta("spot", "") == id:
-			return true
-	return false
+	return _find_button(main.place_view, "spot", id) != null
 
 func _assert_action_result(result: Dictionary) -> void:
 	for key: String in ["ok", "feedback", "new_entry", "entry"]:
@@ -331,9 +406,55 @@ func _has_error(errors: Array[String], expected: String) -> bool:
 	return false
 
 
-func _press_button(container: Node, meta_key: String, value: String) -> void:
-	for child in container.get_children():
+func _find_button(parent: Node, meta_key: String, value: String) -> Button:
+	for child in parent.get_children():
 		if child is Button and child.get_meta(meta_key, "") == value:
-			child.pressed.emit()
-			return
-	assert(false, "버튼을 찾을 수 없음: %s=%s" % [meta_key, value])
+			return child
+		var found := _find_button(child, meta_key, value)
+		if found != null:
+			return found
+	return null
+
+
+func _press_button(container: Node, meta_key: String, value: String) -> void:
+	var button := _find_button(container, meta_key, value)
+	assert(button != null, "버튼을 찾을 수 없음: %s=%s" % [meta_key, value])
+	button.pressed.emit()
+
+
+func _click_real_spot(main: Control, id: String) -> void:
+	var button := _find_button(main.place_view, "spot", id)
+	assert(button != null)
+	await _mouse_click(button.get_global_rect().get_center())
+
+
+func _assert_invisible_hotspots(main: Control) -> bool:
+	assert(not main.debug_hotspots)
+	assert(main.annex_canvas is Control)
+	assert(main.annex_canvas.get_node("BackgroundTexture") is TextureRect)
+	for child in main.annex_canvas.get_children():
+		if child is Button:
+			assert(child.text.is_empty())
+			assert(child.tooltip_text.is_empty())
+			assert(child.get_theme_stylebox("normal") is StyleBoxEmpty)
+			assert(child.get_theme_stylebox("focus") is StyleBoxEmpty)
+			assert(child.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND)
+			assert(child.focus_mode == Control.FOCUS_NONE)
+			var hover := child.get_theme_stylebox("hover") as StyleBoxFlat
+			assert(hover.bg_color.a < 0.05)
+			assert(child.anchor_left >= 0 and child.anchor_right <= 1)
+			assert(child.anchor_top >= 0 and child.anchor_bottom <= 1)
+	return true
+
+
+func _assert_annex_background(main: Control, filename: String) -> bool:
+	var texture: Texture2D = main.annex_canvas.get_node("BackgroundTexture").texture
+	assert(texture != null)
+	if main.zoomed:
+		assert(texture is AtlasTexture)
+		var atlas := texture as AtlasTexture
+		assert(atlas.region == Rect2(main.ANNEX_CLOSEUP_REGION.position * atlas.atlas.get_size(), main.ANNEX_CLOSEUP_REGION.size * atlas.atlas.get_size()))
+		texture = atlas.atlas
+	assert(texture.resource_path == "res://assets/backgrounds/" + filename)
+	assert(not main.annex_canvas.has_node("TemporaryGeometry"))
+	return true

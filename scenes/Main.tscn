@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/annex_before.png" id="2_before"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/annex_revealed.png" id="3_revealed"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -10,3 +12,5 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
+annex_before_background = ExtResource("2_before")
+annex_revealed_background = ExtResource("3_revealed")

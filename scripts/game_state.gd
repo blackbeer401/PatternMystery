@@ -6,73 +6,88 @@ const START_LOCATION := "central_hall"
 const JOURNAL_KINDS := ["material", "witness"]
 
 const ENTRIES := {
-	"entrance_notice": {
+	"annex_plan": {
 		"kind": "material",
-		"title": "철거 사전점검 안내문",
-		"body": "철거 사전점검 기간에는 출입 기록을 남기고, 이상 설비를 발견하면 현장 책임자에게 보고할 것.\n\n※ 프로토타입용 문서입니다."
+		"title": "과거 별관 시설도면",
+		"body": "[학교 보관 시설도면 / 별관 평면 발췌]\n\n별관 대기실을 지나 복도 끝에 이르면, 외벽 쪽으로 ‘기계실’, 그 안쪽으로 ‘설비관리 공간’이 표시되어 있다. 복도와 기계실 사이에는 설비 접근구 표시가 있다. 두 공간은 별도의 구획으로 그려져 있다.\n\n대기실 창과 복도 끝 외벽의 위치를 기준으로 도면의 방향을 읽을 수 있다. 접근구 너머 구획의 경계는 표시되어 있지만, 이 도면에는 이후 벽체 변경 이력이 기재되어 있지 않다.\n\n도면은 당시 시설의 배치를 나타낸다. 현재 구조를 실측한 자료는 아니다."
 	},
-	"inspection_sheet": {
+	"closure_record": {
 		"kind": "material",
-		"title": "교무실 점검표",
-		"body": "교무실 창문 잠금 확인. 캐비닛 2번은 열쇠 분실로 확인 보류.\n\n작성자와 작성 시각은 비어 있다."
+		"title": "시설 사용 종료·폐쇄 기록",
+		"body": "[시설관리대장 / 별관 항목]\n\n대상: 별관 기계실 및 설비관리 공간\n처리: 사용 종료 및 폐쇄\n처리 시점: 2003년 이전\n\n해당 시설은 공식 사용 대상에서 제외하고 폐쇄 처리함.\n\n보관된 이 항목에는 행정상 처리 상태가 기재되어 있다. 공간 철거 여부, 접근구 마감 방식 및 시공 상세는 기재되어 있지 않다. 첨부된 과거 시설도면의 공간 명칭은 그대로 남아 있다."
 	},
-	"relay_pulse": {
+	"missing_case": {
+		"kind": "material",
+		"title": "2003년 박재영 실종사건 자료",
+		"body": "[학교 보관 사건 자료 / 2003년]\n\n성명: 박재영\n당시 나이: 17세\n상태: 실종\n\n박재영은 학교 별관 인근에서 마지막으로 확인된 뒤 실종되었다. 학교는 교내 수색 관련 기록을 사건 자료와 함께 보관했다.\n\n이 자료의 ‘별관 인근’ 표기는 마지막 확인 위치의 범주이다. 별관 내부의 특정 방이나 설비공간을 마지막 확인 지점으로 특정하고 있지는 않다."
+	},
+	"search_record": {
+		"kind": "material",
+		"title": "2003년 교내 수색 기록",
+		"body": "[박재영 실종 관련 교내 수색 기록 / 2003년]\n\n구역별 확인 사항\n\n별관 기계실 및 설비구역 확인 완료\n\n위 문구는 구역별 확인 사항에 남아 있는 원문이다. 이 보관본에는 해당 구역의 진입 지점, 내부 확인 동선 또는 확인 범위를 표시한 도면이 첨부되어 있지 않다.\n\n‘확인 완료’의 세부 범위는 이 기록만으로 특정할 수 없다. 당시 접근 가능하고 안전하게 확인할 수 있었던 범위를 가리켰을 가능성도 남아 있다."
+	},
+	"hidden_access": {
 		"kind": "witness",
-		"title": "순간적으로 점멸한 표시등",
-		"body": "방송 콘솔의 네 번째 표시등이 한 차례 희미하게 점멸했다. 다른 장비에는 변화가 없었다."
+		"title": "벽 뒤에서 드러난 설비 접근구",
+		"body": "[2026년 현장 관찰]\n\n별관 대기실을 지나 복도 끝 외벽 쪽에 벽체 철거 구간이 있다. 철거된 벽 마감 뒤로 오래된 설비 접근구의 테두리가 드러나 있다. 철거 전에는 복도에서 이 테두리를 볼 수 없었다.\n\n접근구와 그 앞의 벽 마감은 서로 다른 층으로 남아 있다. 현장에서 보이는 흔적만으로 벽 마감의 시공 시점을 정할 수는 없다."
 	},
-	"worker_note": {
-		"kind": "material",
-		"title": "작업자의 메모",
-		"body": "별관 인터폰 선로는 연결되어 있지만 응답 상태가 불안정하다. 다음 점검 때 방송실 단자와 함께 확인할 것."
-	},
-	"cold_receiver": {
+	"remaining_space": {
 		"kind": "witness",
-		"title": "차가운 인터폰 수화기",
-		"body": "인터폰 수화기는 주변 공기보다 뚜렷하게 차갑다. 수화기에서는 아무 소리도 들리지 않는다."
+		"title": "접근구 너머에 남아 있는 설비공간",
+		"body": "[2026년 현장 관찰 / 접근구 바깥에서 확인]\n\n접근구 너머에는 바닥과 벽으로 구획된 빈 공간이 남아 있다. 입구 전체를 채우는 막음 구조는 보이지 않는다. 보이는 공간의 안쪽에는 구획 벽이 있으며, 그 뒤는 이 위치에서 시야에 들어오지 않는다.\n\n공간 자체가 완전히 제거된 상태는 아니다. 다만 접근구 바깥에서 보이는 부분을 관찰했을 뿐, 내부 전체의 범위나 다른 구획과의 연결 상태까지 확인한 것은 아니다."
 	}
 }
 
 const LOCATIONS := {
 	"central_hall": {
 		"title": "중앙복도",
-		"description": "세 방향으로 복도가 갈라진다. 빛바랜 안내판과 닫힌 교실문이 보인다.",
+		"description": "2026년. 별관 정비 전 조사를 위해 학교 보관 자료와 현장이 개방되어 있다. 복도에서 교무실, 시설자료실, 별관 대기실로 갈 수 있다.",
 		"color": "#182029",
 		"objects": [
-			{"id": "notice_board", "label": "안내판 조사", "feedback": "안내판 아래에 접힌 안내문이 끼워져 있다.", "entry_id": "entrance_notice"},
-			{"id": "classroom_door", "label": "닫힌 교실문 조사", "feedback": "문은 잠겨 있다. 지금은 열 수 없다."}
+			{"id": "notice_board", "label": "현장 조사 안내문", "feedback": "2026년 별관 리모델링 또는 철거 전 조사. 오래된 벽체 일부를 철거하는 중이며, 조사자는 개방된 복도에서 현장을 관찰할 것. 접근구 내부는 안전 확인 전까지 진입하지 말 것."},
+			{"id": "archive_guide", "label": "자료 배치 안내", "feedback": "학교 보관 사건·수색 기록: 교무실. 과거 시설도면·시설관리대장: 시설자료실. 현장 작업 기록: 별관 대기실."}
 		],
-		"exits": ["faculty_room", "broadcast_room", "annex_waiting_room"]
+		"exits": ["faculty_room", "facility_archive", "annex_waiting_room"]
 	},
 	"faculty_room": {
 		"title": "교무실",
-		"description": "먼지가 내려앉은 책상과 철제 캐비닛이 남아 있다.",
+		"description": "보관 자료철 두 권이 책상 위에 펼쳐져 있다. 사건 자료와 교내 수색 기록은 각각 다른 표지를 갖고 있다.",
 		"color": "#29231d",
 		"objects": [
-			{"id": "desk", "label": "책상 조사", "feedback": "서류 더미 아래에서 점검표를 발견했다.", "entry_id": "inspection_sheet"},
-			{"id": "cabinet", "label": "캐비닛 조사", "feedback": "2번 캐비닛만 잠겨 있다. 손잡이에 최근 긁힌 흔적이 있다."}
+			{"id": "case_file", "label": "실종사건 자료철", "feedback": "2003년 박재영 실종사건 자료를 읽었다.", "entry_id": "missing_case"},
+			{"id": "search_file", "label": "교내 수색 기록철", "feedback": "구역별 확인 사항이 적힌 수색 기록을 읽었다.", "entry_id": "search_record"}
 		],
 		"exits": ["central_hall"]
 	},
-	"broadcast_room": {
-		"title": "방송실",
-		"description": "낡은 콘솔과 회선 표시등이 어둠 속에 줄지어 있다.",
+	"facility_archive": {
+		"title": "시설자료실",
+		"description": "과거 별관 도면과 시설관리대장이 나란히 놓여 있다. 도면에는 복도와 방의 경계가, 대장에는 시설 처리 상태가 기록되어 있다.",
 		"color": "#151f1d",
 		"objects": [
-			{"id": "console", "label": "방송 콘솔 조사", "feedback": "전원은 꺼져 있지만 네 번째 표시등이 순간적으로 점멸했다.", "entry_id": "relay_pulse"},
-			{"id": "breaker", "label": "배전반 조사", "feedback": "각 회로의 명칭표가 지워져 있다. 스위치는 건드리지 않았다."}
+			{"id": "plan_drawer", "label": "과거 별관 시설도면", "feedback": "별관 평면도에 기계실과 설비관리 공간이 표시되어 있다.", "entry_id": "annex_plan"},
+			{"id": "facility_register", "label": "시설관리대장", "feedback": "해당 시설의 사용 종료·폐쇄 항목을 읽었다.", "entry_id": "closure_record"}
 		],
 		"exits": ["central_hall"]
 	},
 	"annex_waiting_room": {
 		"title": "별관 대기실",
-		"description": "금이 간 창문 옆에 인터폰과 접이식 의자가 놓여 있다.",
+		"description": "현장 작업 기록과 위치 약도가 접이식 탁자에 놓여 있다. 창 옆 복도는 벽체 철거 구간으로 이어진다.",
 		"color": "#211c27",
 		"objects": [
-			{"id": "worker_bag", "label": "작업 가방 조사", "feedback": "가방 안쪽에서 접힌 메모를 발견했다.", "entry_id": "worker_note"},
-			{"id": "interphone", "label": "인터폰 조사", "feedback": "수화기는 이상할 정도로 차갑고 아무 소리도 나지 않는다.", "entry_id": "cold_receiver"}
+			{"id": "work_log", "label": "벽체 철거 작업 기록", "feedback": "2026년 작업 기록: 복도 끝의 오래된 벽 마감을 철거하던 중 뒤쪽에서 설비 접근구 테두리를 발견함. 작업은 접근구 내부에 진입하지 않고 현 상태에서 중단함."},
+			{"id": "site_map", "label": "현장 위치 약도", "feedback": "현재 위치는 별관 대기실. 창을 왼쪽에 두고 복도를 따라가면 끝의 외벽 쪽에 철거 구간이 있다. 약도는 현재 복도와 작업 구간만 표시한다."}
 		],
-		"exits": ["central_hall"]
+		"exits": ["central_hall", "annex_wall"]
+	},
+	"annex_wall": {
+		"title": "별관 벽체 철거 구간",
+		"description": "복도 끝 외벽 쪽의 마감이 일부 걷혀 있다. 드러난 접근구 바깥에서 벽체와 그 너머를 관찰할 수 있다. 내부 진입은 제한되어 있다.",
+		"color": "#242329",
+		"objects": [
+			{"id": "access_frame", "label": "벽체와 설비 접근구 관찰", "feedback": "철거된 마감 뒤에 오래된 접근구 테두리가 남아 있다.", "entry_id": "hidden_access"},
+			{"id": "space_view", "label": "접근구 너머 관찰", "feedback": "구획된 공간이 남아 있다. 안쪽 구획 벽 뒤는 여기서 보이지 않는다.", "entry_id": "remaining_space"}
+		],
+		"exits": ["annex_waiting_room"]
 	}
 }
 
